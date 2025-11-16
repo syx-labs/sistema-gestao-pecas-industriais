@@ -95,7 +95,7 @@ Motivos:
 
 ### Pré-requisitos
 - Python 3.8 ou superior
-- Nenhuma dependência externa necessária!
+- Bun ou pip para instalar dependências
 
 ### Instalação
 
@@ -104,19 +104,49 @@ Motivos:
 git clone https://github.com/ogabrielfalcao/sistema-gestao-pecas-industriais.git
 cd sistema-gestao-pecas-industriais
 
-# Execute o programa
+# Instale as dependências
+bun install  # ou: pip install -r requirements.txt
+```
+
+### Modo Terminal (CLI)
+
+Execute a versão original em linha de comando:
+
+```bash
 python3 main.py
 ```
 
-Simples assim! O projeto usa apenas a biblioteca padrão do Python.
+### Modo Visual (Streamlit) ✨ **NOVO!**
 
-## 🏗️ Arquitetura do Código
+Execute a interface visual moderna com gráficos e dashboards:
+
+```bash
+streamlit run streamlit_app.py
+# ou
+bun run streamlit run streamlit_app.py
+```
+
+A aplicação abrirá automaticamente no navegador em `http://localhost:8501`
+
+#### Recursos da Interface Visual:
+
+- 📊 **Dashboard em Tempo Real**: Visualize métricas e gráficos interativos
+- 📝 **Cadastro Intuitivo**: Formulário visual para cadastrar peças
+- 📈 **Gráficos Dinâmicos**: 
+  - Taxa de aprovação (pizza)
+  - Motivos de reprovação (barras)
+  - Distribuição de peso (histograma)
+- 📦 **Monitoramento de Caixas**: Acompanhe o preenchimento em tempo real
+- 📋 **Relatórios Completos**: Análises detalhadas e estatísticas
+
+## 🏭 Arquitetura do Código
 
 Estruturei o projeto seguindo os princípios de **Clean Code** e **Clean Architecture**:
 
 ```
 sistema-gestao-pecas-industriais/
-├── main.py                      # Ponto de entrada
+├── main.py                      # Ponto de entrada (CLI)
+├── streamlit_app.py             # Interface visual (Streamlit)
 ├── models/                      # Modelos de dados
 │   ├── peca.py                  # Estrutura de Peça
 │   └── caixa.py                 # Estrutura de Caixa
@@ -124,8 +154,10 @@ sistema-gestao-pecas-industriais/
 │   ├── validacao.py             # Validação de qualidade
 │   ├── armazenamento.py         # Gestão de caixas
 │   └── relatorio.py             # Geração de relatórios
-└── utils/                       # Interface do usuário
-    └── menu.py                  # Menu interativo
+├── utils/                       # Interface do usuário
+│   └── menu.py                  # Menu interativo (CLI)
+└── .streamlit/                  # Configurações do Streamlit
+    └── config.toml              # Tema e configurações
 ```
 
 ### Por que essa estrutura?
@@ -163,13 +195,30 @@ validar_comprimento(comprimento)
 
 Isso segue o **Single Responsibility Principle** do SOLID.
 
-## 📊 Estatísticas do Projeto
+## 📈 Estatísticas do Projeto
 
-- **830 linhas** de código Python
-- **10 arquivos** .py
-- **25+ funções** bem documentadas
+- **1.300+ linhas** de código Python
+- **12 arquivos** .py
+- **40+ funções** bem documentadas
 - **3 camadas** arquiteturais
-- **0 dependências** externas
+- **2 interfaces** (CLI + Visual)
+
+## 🛠️ Tecnologias Utilizadas
+
+### Core
+- **Python 3.8+**: Linguagem principal
+- **TypedDict**: Type hints para segurança de tipos
+
+### Interface Visual
+- **Streamlit 1.28+**: Framework para interfaces web interativas
+- **Plotly 5.17+**: Biblioteca de gráficos interativos
+- **Pandas 2.0+**: Manipulação e visualização de dados
+
+### Padrões de Projeto
+- **Clean Architecture**: Separação de camadas
+- **SOLID Principles**: Single Responsibility em cada função
+- **Type Safety**: Tipagem forte em todo o código
+- **Factory Pattern**: Funções factory para criação de objetos
 
 ## 🔮 Visão Futura
 

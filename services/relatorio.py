@@ -2,8 +2,23 @@
 Serviço de geração de relatórios consolidados.
 """
 
-from typing import Dict
+from typing import Dict, List, TypedDict
 from services.armazenamento import SistemaArmazenamento
+from models.peca import Peca
+
+
+class EstatisticasReprovacao(TypedDict):
+    """
+    Estatísticas detalhadas de reprovações.
+    
+    Attributes:
+        peso_inadequado: Quantidade de peças reprovadas por peso
+        cor_inadequada: Quantidade de peças reprovadas por cor
+        comprimento_inadequado: Quantidade de peças reprovadas por comprimento
+    """
+    peso_inadequado: int
+    cor_inadequada: int
+    comprimento_inadequado: int
 
 
 def gerar_relatorio_completo(sistema: SistemaArmazenamento) -> str:
@@ -74,6 +89,25 @@ def gerar_relatorio_completo(sistema: SistemaArmazenamento) -> str:
     relatorio.append("=" * 40)
     
     return "\n".join(relatorio)
+
+
+def gerar_estatisticas_reprovacao(pecas_reprovadas: List[Peca]) -> EstatisticasReprovacao:
+    """
+    Gera estatísticas detalhadas sobre reprovações.
+    
+    Args:
+        pecas_reprovadas: Lista de peças reprovadas
+    
+    Returns:
+        EstatisticasReprovacao com contadores por tipo de motivo
+    """
+    contadores = analisar_motivos_reprovacao(pecas_reprovadas)
+    
+    return EstatisticasReprovacao(
+        peso_inadequado=contadores['peso'],
+        cor_inadequada=contadores['cor'],
+        comprimento_inadequado=contadores['comprimento']
+    )
 
 
 def analisar_motivos_reprovacao(pecas_reprovadas: list) -> Dict[str, int]:

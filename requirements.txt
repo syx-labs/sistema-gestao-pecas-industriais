@@ -1,2 +1,4 @@
-# Nenhuma dependência externa necessária
-# Este projeto usa apenas a biblioteca padrão do Python 3.8+
+# Dependências do projeto
+streamlit>=1.28.0
+plotly>=5.17.0
+pandas>=2.0.0

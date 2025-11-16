@@ -562,10 +562,11 @@ def test_adicionar_10a_peca_fecha_caixa():
 ```
 ┌─────────────────────────────────────┐
 │         Sistema Atual               │
-│  • Em memória (não persiste)        │
+│  • Persistência SQLite (3NF)        │
 │  • CLI + Interface Web              │
 │  • Validação em tempo real          │
 │  • Relatórios consolidados          │
+│  • Sincronização automática         │
 └─────────────────────────────────────┘
 ```
 
@@ -619,6 +620,328 @@ flowchart TB
 
 ---
 
+## 💾 Camada de Persistência SQLite
+
+### Visão Geral
+
+O sistema agora conta com **persistência de dados** usando SQLite com schema normalizado (3NF). A implementação é **totalmente transparente** - o código existente continua funcionando sem modificações, e a sincronização com o banco de dados acontece automaticamente.
+
+### Arquitetura de Persistência
+
+```mermaid
+flowchart TB
+    subgraph Interface["🖥️ Interfaces"]
+        CLI[CLI - main.py]
+        Web[Streamlit - streamlit_app.py]
+    end
+    
+    subgraph Services["⚙️ Services"]
+        Armazenamento[armazenamento.py]
+        Database[database.py]
+    end
+    
+    subgraph Storage["💾 Persistência"]
+        SQLite[(SQLite Database)]
+    end
+    
+    CLI --> Armazenamento
+    Web --> Armazenamento
+    Armazenamento --> Database
+    Database --> SQLite
+    
+    style Database fill:#4CAF50
+    style SQLite fill:#2196F3
+```
+
+### Schema do Banco (Normalizado - 3NF)
+
+O banco de dados foi projetado seguindo a **Terceira Forma Normal (3NF)** para garantir integridade e eliminar redundâncias:
+
+```sql
+-- Tabela de Peças (entidade principal)
+CREATE TABLE pecas (
+    id TEXT PRIMARY KEY,
+    peso REAL NOT NULL,
+    cor TEXT NOT NULL,
+    comprimento REAL NOT NULL,
+    aprovada BOOLEAN NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela de Motivos de Reprovação (1:N com Peças)
+CREATE TABLE motivos_reprovacao (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    peca_id TEXT NOT NULL,
+    motivo TEXT NOT NULL,
+    FOREIGN KEY (peca_id) REFERENCES pecas(id) ON DELETE CASCADE
+);
+
+-- Tabela de Caixas
+CREATE TABLE caixas (
+    id INTEGER PRIMARY KEY,
+    fechada BOOLEAN NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela Associativa Caixas-Peças (N:M)
+CREATE TABLE caixas_pecas (
+    caixa_id INTEGER NOT NULL,
+    peca_id TEXT NOT NULL,
+    ordem INTEGER NOT NULL,
+    PRIMARY KEY (caixa_id, peca_id),
+    FOREIGN KEY (caixa_id) REFERENCES caixas(id) ON DELETE CASCADE,
+    FOREIGN KEY (peca_id) REFERENCES pecas(id) ON DELETE CASCADE
+);
+
+-- Tabela de Configuração do Sistema
+CREATE TABLE sistema_config (
+    chave TEXT PRIMARY KEY,
+    valor TEXT NOT NULL
+);
+```
+
+### Benefícios da Normalização
+
+**1. Eliminação de Redundância**
+- Cada peça é armazenada uma única vez
+- Motivos de reprovação são normalizados em tabela separada
+- Relacionamentos são gerenciados por foreign keys
+
+**2. Integridade Referencial**
+- `ON DELETE CASCADE` garante que dados órfãos sejam removidos
+- Foreign keys impedem referências inválidas
+- Constraints garantem tipos de dados corretos
+
+**3. Escalabilidade**
+- Fácil adicionar novos campos sem afetar relacionamentos
+- Queries eficientes com índices automáticos (PRIMARY KEY)
+- Preparado para evolução futura
+
+### Integração Transparente
+
+A camada de persistência foi projetada para ser **invisível** ao código existente:
+
+#### Antes (Em Memória)
+```python
+def inicializar_sistema() -> SistemaArmazenamento:
+    return SistemaArmazenamento(
+        pecas_aprovadas=[],
+        pecas_reprovadas=[],
+        caixas_fechadas=[],
+        caixa_atual=criar_caixa(1),
+        contador_caixas=1
+    )
+```
+
+#### Depois (Com Persistência)
+```python
+def inicializar_sistema() -> SistemaArmazenamento:
+    # Inicializa banco (cria schema se necessário)
+    database.inicializar_database()
+    
+    # Carrega dados existentes ou cria novo sistema
+    if database.banco_existe():
+        sistema = database.carregar_sistema_completo()
+        if sistema_vazio(sistema):
+            sistema = criar_sistema_novo()
+            database.sincronizar_sistema(sistema)
+        return sistema
+    
+    # Primeira execução - cria e persiste
+    sistema = criar_sistema_novo()
+    database.sincronizar_sistema(sistema)
+    return sistema
+```
+
+**Resultado:** Mesma interface `SistemaArmazenamento`, zero mudanças nas funções públicas!
+
+### Sincronização Automática
+
+Cada operação que modifica o estado do sistema aciona sincronização automática:
+
+```python
+def adicionar_peca_em_caixa(peca, sistema):
+    # ... lógica de negócio ...
+    sistema['caixa_atual']['pecas'].append(peca)
+    
+    # Sincroniza automaticamente com o banco
+    if database.banco_existe():
+        database.sincronizar_sistema(sistema)
+    
+    return caixa_fechada, mensagem
+```
+
+**Operações que sincronizam:**
+- ✅ Adicionar peça em caixa
+- ✅ Remover peça do sistema
+- ✅ Fechar caixa (ao atingir 10 peças)
+- ✅ Criar nova caixa
+
+### Comportamento Entre Execuções
+
+#### Primeira Execução
+```
+1. Sistema detecta que banco não existe
+2. Cria arquivo sistema_pecas.db
+3. Cria schema completo (5 tabelas)
+4. Inicializa sistema vazio
+5. Salva estado inicial
+```
+
+#### Execuções Subsequentes
+```
+1. Sistema detecta banco existente
+2. Carrega todas as peças (aprovadas + reprovadas)
+3. Carrega todas as caixas (fechadas + atual)
+4. Reconstrói SistemaArmazenamento em memória
+5. Pronto para uso - dados persistidos!
+```
+
+### Exemplo Prático de Persistência
+
+**Sessão 1 - Segunda-feira:**
+```python
+sistema = inicializar_sistema()
+
+# Cadastra 5 peças
+for i in range(5):
+    peca = criar_peca(f"P{i:03d}", 100.0, "azul", 15.0, True)
+    adicionar_peca_em_caixa(peca, sistema)
+    # ↑ Sincroniza automaticamente após cada adição
+
+# Ao sair: 5 peças salvas no banco
+```
+
+**Sessão 2 - Terça-feira:**
+```python
+sistema = inicializar_sistema()
+# ↑ Carrega automaticamente do banco
+
+print(len(sistema['pecas_aprovadas']))  # 5 peças!
+print(len(sistema['caixa_atual']['pecas']))  # 5 peças na caixa!
+
+# Adiciona mais 5 peças → fecha primeira caixa
+for i in range(5, 10):
+    peca = criar_peca(f"P{i:03d}", 100.0, "verde", 15.0, True)
+    adicionar_peca_em_caixa(peca, sistema)
+
+# Ao sair: 10 peças, 1 caixa fechada
+```
+
+**Sessão 3 - Quarta-feira:**
+```python
+sistema = inicializar_sistema()
+
+print(len(sistema['pecas_aprovadas']))  # 10 peças!
+print(len(sistema['caixas_fechadas']))  # 1 caixa fechada!
+print(sistema['contador_caixas'])  # 2 (próxima caixa)
+
+# Continua de onde parou!
+```
+
+### Funções Principais da Camada Database
+
+| Função | Responsabilidade |
+|--------|------------------|
+| `inicializar_database()` | Cria schema se não existir (idempotente) |
+| `banco_existe()` | Verifica se arquivo .db existe |
+| `salvar_peca(peca)` | Salva/atualiza peça + motivos |
+| `carregar_pecas()` | Retorna (aprovadas, reprovadas) |
+| `salvar_caixa(caixa)` | Salva caixa + relacionamentos |
+| `carregar_caixas()` | Retorna (fechadas, atual, contador) |
+| `sincronizar_sistema(sistema)` | Salva estado completo |
+| `carregar_sistema_completo()` | Carrega estado completo |
+| `limpar_banco()` | Remove dados (mantém schema) |
+| `remover_banco()` | Deleta arquivo .db |
+
+### Testes Implementados
+
+A camada de persistência possui **cobertura completa de testes**:
+
+**Testes Unitários** (`tests/unit/test_database.py`):
+- ✅ Criação de schema
+- ✅ Salvamento/carregamento de peças
+- ✅ Salvamento/carregamento de caixas
+- ✅ Relacionamentos (caixas-peças)
+- ✅ Motivos de reprovação
+- ✅ Configurações do sistema
+
+**Testes de Integração** (`tests/integration/test_database_integration.py`):
+- ✅ Persistência entre execuções
+- ✅ Workflow completo de produção
+- ✅ Múltiplas caixas fechadas
+- ✅ Remoção de peças
+- ✅ Contador de caixas
+- ✅ Recuperação de erros
+
+### Localização do Banco
+
+```
+rocketseat-project-python/
+├── sistema_pecas.db  ← Banco SQLite (gerado automaticamente)
+├── services/
+│   ├── database.py   ← Camada de persistência
+│   └── armazenamento.py  ← Integrado com database
+└── .gitignore        ← *.db ignorado (dados locais)
+```
+
+**Importante:** O arquivo `.db` é **local** e não vai para o Git (adicionado ao `.gitignore`).
+
+### Decisões de Design
+
+**1. Por que SQLite?**
+- ✅ **Zero configuração** - sem servidor, sem setup
+- ✅ **Portátil** - um único arquivo
+- ✅ **Rápido** - suficiente para o volume de dados
+- ✅ **Nativo Python** - biblioteca `sqlite3` built-in
+- ✅ **Transacional** - ACID compliant
+
+**2. Por que Normalizado (3NF)?**
+- ✅ **Integridade** - foreign keys garantem consistência
+- ✅ **Sem redundância** - cada dado em um único lugar
+- ✅ **Escalável** - fácil adicionar features
+- ✅ **Profissional** - padrão da indústria
+
+**3. Por que Sincronização Automática?**
+- ✅ **Transparente** - desenvolvedor não precisa lembrar
+- ✅ **Consistente** - banco sempre atualizado
+- ✅ **Simples** - sem APIs complexas
+- ✅ **Confiável** - não perde dados
+
+### Evolução Futura
+
+Com a base SQLite estabelecida, futuras evoluções são possíveis:
+
+**Migração para PostgreSQL:**
+```python
+# Mesma interface, backend diferente
+def carregar_sistema_completo():
+    if USE_POSTGRES:
+        return postgres_adapter.carregar()
+    else:
+        return sqlite_adapter.carregar()
+```
+
+**Cache com Redis:**
+```python
+def carregar_sistema_completo():
+    # Tenta cache primeiro
+    if redis.exists('sistema'):
+        return redis.get('sistema')
+    # Fallback para banco
+    return database.carregar_sistema_completo()
+```
+
+**API REST:**
+```python
+@app.get("/api/sistema")
+def get_sistema():
+    sistema = database.carregar_sistema_completo()
+    return jsonify(sistema)
+```
+
+---
+
 ## 💭 Reflexões Pessoais
 
 ### O que Aprendi
@@ -646,13 +969,6 @@ Eu poderia ter feito tudo em um arquivo gigante. Mas pensei: "E se outra pessoa 
 **Mas isso é normal!** Arquitetura é iterativa. Você aprende fazendo.
 
 ---
-
-## 📚 Referências e Inspirações
-
-**Livros que me ajudaram:**
-- "Clean Code" - Robert C. Martin
-- "Clean Architecture" - Robert C. Martin
-- "Python Fluente" - Luciano Ramalho
 
 **Conceitos Aplicados:**
 - ✅ **SOLID Principles** (principalmente SRP)
@@ -737,12 +1053,15 @@ pytest --cov=services --cov=models --cov-report=html
 | `models/peca.py` | 58 | Define estrutura de Peça |
 | `models/caixa.py` | 43 | Define estrutura de Caixa |
 | `services/validacao.py` | 104 | Regras de qualidade |
-| `services/armazenamento.py` | 137 | Gestão de caixas |
+| `services/armazenamento.py` | 208 | Gestão de caixas + integração DB |
+| `services/database.py` | 420 | Camada de persistência SQLite |
 | `services/relatorio.py` | 140 | Estatísticas e relatórios |
 | `main.py` | 78 | Interface CLI |
 | `streamlit_app.py` | ~400 | Interface Web |
+| `tests/unit/test_database.py` | 420 | Testes da camada de persistência |
+| `tests/integration/test_database_integration.py` | 380 | Testes de persistência end-to-end |
 
-**Total:** ~1.300 linhas de código Python + 3.500 linhas de testes
+**Total:** ~2.250 linhas de código Python + 4.300 linhas de testes
 
 ---
 

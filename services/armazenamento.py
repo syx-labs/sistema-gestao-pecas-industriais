@@ -6,6 +6,13 @@ from typing import TypedDict, List, Tuple, Optional
 from models.peca import Peca
 from models.caixa import Caixa, CAPACIDADE_MAXIMA_CAIXA, criar_caixa
 
+# Importação condicional para evitar dependência circular
+import sys
+if 'services.database' not in sys.modules:
+    from services import database
+else:
+    database = sys.modules['services.database']
+
 
 class SistemaArmazenamento(TypedDict):
     """
@@ -66,12 +73,22 @@ def adicionar_peca_em_caixa(
             f"📦 Caixa #{total_pecas_caixa - 1} FECHADA (10 peças completas). "
             f"🆕 Caixa #{sistema['contador_caixas']} iniciada"
         )
+        
+        # Sincroniza com o banco de dados
+        if database.banco_existe():
+            database.sincronizar_sistema(sistema)
+        
         return True, mensagem
     
     mensagem = (
         f"Peça {peca['id']} adicionada à Caixa #{sistema['caixa_atual']['id']} "
         f"({total_pecas_caixa}/{CAPACIDADE_MAXIMA_CAIXA} peças)"
     )
+    
+    # Sincroniza com o banco de dados
+    if database.banco_existe():
+        database.sincronizar_sistema(sistema)
+    
     return False, mensagem
 
 
@@ -100,6 +117,11 @@ def remover_peca_por_id(
             for j, peca_caixa in enumerate(sistema['caixa_atual']['pecas']):
                 if peca_caixa['id'] == id_peca:
                     sistema['caixa_atual']['pecas'].pop(j)
+                    
+                    # Sincroniza com o banco de dados
+                    if database.banco_existe():
+                        database.sincronizar_sistema(sistema)
+                    
                     return True, f"Peça {id_peca} removida da caixa atual"
             
             # Remove de caixas fechadas (não deve acontecer normalmente)
@@ -107,7 +129,16 @@ def remover_peca_por_id(
                 for j, peca_caixa in enumerate(caixa['pecas']):
                     if peca_caixa['id'] == id_peca:
                         caixa['pecas'].pop(j)
+                        
+                        # Sincroniza com o banco de dados
+                        if database.banco_existe():
+                            database.sincronizar_sistema(sistema)
+                        
                         return True, f"Peça {id_peca} removida da Caixa #{caixa['id']}"
+            
+            # Sincroniza com o banco de dados
+            if database.banco_existe():
+                database.sincronizar_sistema(sistema)
             
             return True, f"Peça {id_peca} removida (aprovada)"
     
@@ -115,6 +146,11 @@ def remover_peca_por_id(
     for i, peca in enumerate(sistema['pecas_reprovadas']):
         if peca['id'] == id_peca:
             sistema['pecas_reprovadas'].pop(i)
+            
+            # Sincroniza com o banco de dados
+            if database.banco_existe():
+                database.sincronizar_sistema(sistema)
+            
             return True, f"Peça {id_peca} removida (reprovada)"
     
     return False, f"Peça {id_peca} não encontrada no sistema"
@@ -123,14 +159,50 @@ def remover_peca_por_id(
 def inicializar_sistema() -> SistemaArmazenamento:
     """
     Inicializa o sistema de armazenamento com valores padrão.
+    Carrega dados do banco se existir, senão cria sistema novo.
     
     Returns:
         Instância de SistemaArmazenamento inicializada
     """
-    return SistemaArmazenamento(
+    # Inicializa o banco de dados (cria schema se não existir)
+    database.inicializar_database()
+    
+    # Se o banco já tem dados, carrega do banco
+    if database.banco_existe():
+        try:
+            # Tenta carregar sistema existente
+            sistema = database.carregar_sistema_completo()
+            
+            # Se o sistema carregado está vazio, inicializa novo
+            if (not sistema['pecas_aprovadas'] and 
+                not sistema['pecas_reprovadas'] and 
+                not sistema['caixas_fechadas']):
+                # Sistema vazio, cria novo
+                sistema = SistemaArmazenamento(
+                    pecas_aprovadas=[],
+                    pecas_reprovadas=[],
+                    caixas_fechadas=[],
+                    caixa_atual=criar_caixa(1),
+                    contador_caixas=1
+                )
+                # Salva estado inicial
+                database.sincronizar_sistema(sistema)
+            
+            return sistema
+        except Exception:
+            # Se houver erro ao carregar, cria sistema novo
+            pass
+    
+    # Cria sistema novo
+    sistema = SistemaArmazenamento(
         pecas_aprovadas=[],
         pecas_reprovadas=[],
         caixas_fechadas=[],
         caixa_atual=criar_caixa(1),
         contador_caixas=1
     )
+    
+    # Salva estado inicial no banco
+    database.sincronizar_sistema(sistema)
+    
+    return sistema

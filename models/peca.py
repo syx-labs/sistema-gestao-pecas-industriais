@@ -2,7 +2,7 @@
 Modelo de dados para Peça.
 """
 
-from typing import TypedDict, List
+from typing import TypedDict, List, Optional
 
 
 class Peca(TypedDict):
@@ -31,7 +31,7 @@ def criar_peca(
     cor: str,
     comprimento: float,
     aprovada: bool = False,
-    motivos_reprovacao: List[str] | None = None
+    motivos_reprovacao: Optional[List[str]] = None
 ) -> Peca:
     """
     Factory function para criar uma instância de Peça.

@@ -6,6 +6,39 @@ import pytest
 from models.peca import criar_peca
 from models.caixa import criar_caixa
 from services.armazenamento import inicializar_sistema, SistemaArmazenamento
+from services import database
+
+
+# ========================================
+# FIXTURES DE DATABASE (LIMPEZA)
+# ========================================
+
+@pytest.fixture(autouse=True, scope="function")
+def limpar_banco_de_dados(request):
+    """
+    Fixture que limpa o banco de dados antes de cada teste.
+    
+    Esta fixture é executada automaticamente (autouse=True) para garantir
+    isolamento completo entre testes. É essencial porque:
+    1. Testes de integração persistem dados no banco
+    2. inicializar_sistema() carrega automaticamente do banco se existir
+    3. Sem limpeza, testes acumulam dados de execuções anteriores
+    
+    CRITICAL: Sem esta fixture, testes falham por contaminação de dados.
+    """
+    # Sempre limpa o banco antes de cada teste
+    # Garante que o banco existe e está inicializado
+    database.inicializar_database()
+    
+    # Limpa o banco antes do teste
+    if database.banco_existe():
+        database.limpar_banco()
+    
+    yield  # Executa o teste
+    
+    # Opcionalmente, limpa novamente após o teste (comentado para debug)
+    # if database.banco_existe():
+    #     database.limpar_banco()
 
 
 # ========================================

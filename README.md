@@ -28,6 +28,18 @@ As peças aprovadas são organizadas em caixas de 10 unidades, que fecham automa
 
 ## 🚀 Como Funciona
 
+### 💾 Persistência de Dados
+
+O sistema agora possui **banco de dados SQLite** com sincronização automática! Todos os dados são salvos e carregados automaticamente entre execuções.
+
+**Características:**
+- ✅ Schema normalizado (3NF)
+- ✅ Sincronização automática
+- ✅ Dados persistem entre sessões
+- ✅ Zero configuração necessária
+
+📖 **Documentação completa:** [docs/DATABASE.md](docs/DATABASE.md)
+
 ### Menu Principal
 
 ```
@@ -242,32 +254,47 @@ Isso segue o **Single Responsibility Principle** do SOLID.
 
 ## 📈 Estatísticas do Projeto
 
-- **1.300+ linhas** de código Python
-- **12 arquivos** .py
-- **40+ funções** bem documentadas
-- **3 camadas** arquiteturais
+- **2.250+ linhas** de código Python
+- **15 arquivos** .py (incluindo database.py)
+- **60+ funções** bem documentadas
+- **4 camadas** arquiteturais (Models, Services, Database, Interfaces)
 - **2 interfaces** (CLI + Visual)
+- **31 testes** de persistência (unitários + integração)
+- **5 tabelas** no banco de dados normalizado
 
 ## 🛠️ Tecnologias Utilizadas
 
 ### Core
 - **Python 3.9+**: Linguagem principal
 - **TypedDict**: Type hints para segurança de tipos
+- **SQLite3**: Banco de dados (built-in)
 
 ### Interface Visual
 - **Streamlit 1.28+**: Framework para interfaces web interativas
 - **Plotly 5.17+**: Biblioteca de gráficos interativos
 - **Pandas 2.0+**: Manipulação e visualização de dados
 
+### Persistência
+- **SQLite**: Banco de dados relacional
+- **Schema 3NF**: Normalização profissional
+- **Sincronização Automática**: Transparente ao desenvolvedor
+
 ### Padrões de Projeto
 - **Clean Architecture**: Separação de camadas
 - **SOLID Principles**: Single Responsibility em cada função
 - **Type Safety**: Tipagem forte em todo o código
 - **Factory Pattern**: Funções factory para criação de objetos
+- **Repository Pattern**: Camada de persistência isolada
 
 ## 🔮 Visão Futura
 
 Este é um protótipo acadêmico, mas pensei em como poderia evoluir para a indústria real:
+
+### 💾 Banco de Dados (✅ IMPLEMENTADO!)
+- ✅ SQLite com schema normalizado
+- ✅ Persistência automática entre sessões
+- ⏳ PostgreSQL para produção
+- ⏳ Redis para cache
 
 ### 🔌 Hardware & IoT
 - Integração com balanças digitais

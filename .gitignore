@@ -74,3 +74,9 @@ Roteiro do Trabalho*.pdf
 .pytest_cache/
 .pytest_cache
 *.pytest_cache
+
+# SQLite Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3

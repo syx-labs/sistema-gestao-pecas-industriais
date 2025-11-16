@@ -279,16 +279,6 @@ Este é um protótipo acadêmico, mas pensei em como poderia evoluir para a ind�
 - Machine learning para prever falhas antes de acontecerem
 - Ajuste automático de critérios baseado em histórico
 
-### 🏢 Integração Empresarial
-- Conexão com sistemas ERP (SAP, Oracle)
-- Dashboard web em tempo real
-- Banco de dados para histórico completo
-- API REST para integração com outros sistemas
-
-### ⚙️ Automação Completa
-- Esteira automatizada
-- Braço robótico para empacotamento
-- Etiquetas RFID nas caixas
 
 ## 🎓 O que Aprendi
 

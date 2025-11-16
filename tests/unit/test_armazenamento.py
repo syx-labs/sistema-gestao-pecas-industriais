@@ -326,6 +326,22 @@ class TestRemoverPeca:
         assert mensagem != ""
         assert "removida" in mensagem.lower()
 
+    @pytest.mark.unit
+    @pytest.mark.edge_case
+    def test_remover_peca_aprovada_nao_em_caixa(self, sistema_vazio):
+        """Remover peça que está em aprovadas mas não em nenhuma caixa (inconsistência)."""
+        # Criar cenário de inconsistência: peça na lista mas não em caixa
+        peca = criar_peca("P999", 100.0, "azul", 15.0, aprovada=True)
+        sistema_vazio['pecas_aprovadas'].append(peca)
+        # NÃO adicionar em caixa_atual
+
+        sucesso, mensagem = remover_peca_por_id("P999", sistema_vazio)
+
+        assert sucesso is True
+        assert "aprovada" in mensagem.lower()
+        assert "P999" in mensagem
+        assert len(sistema_vazio['pecas_aprovadas']) == 0
+
 
 # ========================================
 # TESTES DE CONSISTÊNCIA DE ESTADO

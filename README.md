@@ -138,6 +138,51 @@ A aplicação abrirá automaticamente no navegador em `http://localhost:8501`
   - Distribuição de peso (histograma)
 - 📦 **Monitoramento de Caixas**: Acompanhe o preenchimento em tempo real
 - 📋 **Relatórios Completos**: Análises detalhadas e estatísticas
+- 🎨 **Design Moderno**: Interface profissional com animações suaves
+- 🌙 **Dark Mode**: Tema escuro ativado por padrão
+
+### 🎨 Personalização de Temas
+
+O sistema suporta **Dark Mode** e **Light Mode** com alternância fácil:
+
+#### Dark Mode (Padrão) 🌙
+- Fundo escuro para menor cansaço visual
+- Alto contraste para melhor legibilidade
+- Cores vibrantes (#4CAF50)
+- Ideal para ambientes com pouca luz
+
+#### Light Mode ☀️
+Para alternar para o tema claro, use o script:
+
+```bash
+./toggle_theme.sh light
+```
+
+Ou manualmente edite `.streamlit/config.toml`:
+
+```toml
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+```
+
+#### Comandos Úteis:
+
+```bash
+# Alternar entre temas automaticamente
+./toggle_theme.sh toggle
+
+# Ativar dark mode
+./toggle_theme.sh dark
+
+# Ativar light mode
+./toggle_theme.sh light
+
+# Ver tema atual
+./toggle_theme.sh status
+```
+
+📖 Para mais detalhes sobre customização, veja [THEMES.md](THEMES.md)
 
 ## 🏭 Arquitetura do Código
 
@@ -206,7 +251,7 @@ Isso segue o **Single Responsibility Principle** do SOLID.
 ## 🛠️ Tecnologias Utilizadas
 
 ### Core
-- **Python 3.8+**: Linguagem principal
+- **Python 3.9+**: Linguagem principal
 - **TypedDict**: Type hints para segurança de tipos
 
 ### Interface Visual
@@ -270,6 +315,6 @@ Este projeto foi desenvolvido para fins educacionais como parte do curso de Algo
 
 ---
 
-**Desenvolvido com ☕ e 💻 por Gabriel Falcão**
+**Desenvolvido com  💻 por Gabriel Falcão**
 
 *"Código limpo não é escrito seguindo regras. Código limpo é escrito por programadores que se importam."* - Robert C. Martin

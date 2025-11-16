@@ -42,6 +42,156 @@ st.set_page_config(
 )
 
 
+def aplicar_estilos_customizados() -> None:
+    """Aplica CSS customizado para melhorar o design."""
+    st.markdown("""
+    <style>
+        /* Estilos gerais */
+        .main {
+            padding-top: 2rem;
+        }
+        
+        /* Cards de métricas mais bonitos */
+        [data-testid="stMetricValue"] {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        [data-testid="stMetricDelta"] {
+            font-size: 1rem;
+        }
+        
+        /* Botões mais estilosos */
+        .stButton > button {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            padding: 0.5rem 2rem;
+        }
+        
+        .stButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        /* Inputs mais modernos */
+        .stTextInput > div > div > input,
+        .stNumberInput > div > div > input,
+        .stSelectbox > div > div > select {
+            border-radius: 8px;
+            border: 2px solid rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .stTextInput > div > div > input:focus,
+        .stNumberInput > div > div > input:focus,
+        .stSelectbox > div > div > select:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        /* Tabs mais bonitas */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 8px;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            border-radius: 8px 8px 0 0;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+        
+        /* Expanders com animação */
+        .streamlit-expanderHeader {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .streamlit-expanderHeader:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        /* Progress bar mais bonita */
+        .stProgress > div > div > div > div {
+            background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        /* Dataframe estilizado */
+        [data-testid="stDataFrame"] {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        /* Dividers mais sutis */
+        hr {
+            margin: 2rem 0;
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.3), transparent);
+        }
+        
+        /* Sidebar com sombra */
+        [data-testid="stSidebar"] {
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Animação suave nos containers */
+        .element-container {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Cards customizados */
+        .custom-card {
+            background: rgba(76, 175, 80, 0.05);
+            border-left: 4px solid #4CAF50;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+        
+        /* Header gradiente */
+        .gradient-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+        
+        .gradient-header h1 {
+            color: white;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .gradient-header p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0.5rem 0 0 0;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+
 def inicializar_session_state() -> None:
     """Inicializa o estado da sessão do Streamlit."""
     if 'sistema' not in st.session_state:
@@ -100,14 +250,28 @@ def criar_grafico_aprovacao(sistema: SistemaArmazenamento) -> go.Figure:
     fig = go.Figure(data=[go.Pie(
         labels=['Aprovadas', 'Reprovadas'],
         values=[total_aprovadas, total_reprovadas],
-        marker_colors=['#28a745', '#dc3545'],
-        hole=0.4
+        marker_colors=['#4CAF50', '#f44336'],
+        hole=0.5,
+        textinfo='label+percent',
+        textfont_size=14,
+        pull=[0.05, 0]
     )])
     
     fig.update_layout(
-        title_text="Taxa de Aprovação",
+        title_text="<b>Taxa de Aprovação</b>",
+        title_font_size=20,
         height=400,
-        showlegend=True
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.2,
+            xanchor="center",
+            x=0.5
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='#FAFAFA', size=12)
     )
     
     return fig
@@ -127,19 +291,43 @@ def criar_grafico_motivos_reprovacao(sistema: SistemaArmazenamento) -> go.Figure
         stats['comprimento_inadequado']
     ]
     
+    # Cores gradientes para cada barra
+    cores = ['#ff6b6b', '#ffa502', '#ff6348']
+    
     fig = go.Figure(data=[
         go.Bar(
             x=motivos,
             y=valores,
-            marker_color=['#ff6b6b', '#4ecdc4', '#ffe66d']
+            marker=dict(
+                color=cores,
+                line=dict(color='rgba(255,255,255,0.2)', width=2)
+            ),
+            text=valores,
+            textposition='outside',
+            textfont=dict(size=14, color='#FAFAFA')
         )
     ])
     
     fig.update_layout(
-        title_text="Motivos de Reprovação",
-        xaxis_title="Motivo",
-        yaxis_title="Quantidade de Peças",
-        height=400
+        title_text="<b>Motivos de Reprovação</b>",
+        title_font_size=20,
+        xaxis_title="<b>Motivo</b>",
+        yaxis_title="<b>Quantidade</b>",
+        height=400,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='#FAFAFA', size=12),
+        xaxis=dict(
+            showgrid=False,
+            showline=True,
+            linecolor='rgba(255,255,255,0.2)'
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(255,255,255,0.1)',
+            showline=True,
+            linecolor='rgba(255,255,255,0.2)'
+        )
     )
     
     return fig
@@ -153,29 +341,64 @@ def criar_grafico_distribuicao_peso(sistema: SistemaArmazenamento) -> go.Figure:
         return None
     
     pesos = [peca['peso'] for peca in todas_pecas]
-    cores_status = ['green' if peca['aprovada'] else 'red' for peca in todas_pecas]
     
     fig = go.Figure()
     
-    # Adiciona histograma
+    # Adiciona histograma com gradiente
     fig.add_trace(go.Histogram(
         x=pesos,
         nbinsx=20,
         name='Distribuição de Peso',
-        marker_color='lightblue'
+        marker=dict(
+            color='#4CAF50',
+            line=dict(color='rgba(255,255,255,0.2)', width=1),
+            opacity=0.8
+        ),
+        hovertemplate='<b>Peso:</b> %{x}g<br><b>Quantidade:</b> %{y}<extra></extra>'
     ))
     
-    # Adiciona linhas de limite
-    fig.add_vline(x=PESO_MINIMO, line_dash="dash", line_color="green", 
-                  annotation_text=f"Mín: {PESO_MINIMO}g")
-    fig.add_vline(x=PESO_MAXIMO, line_dash="dash", line_color="green",
-                  annotation_text=f"Máx: {PESO_MAXIMO}g")
+    # Adiciona linhas de limite com estilo melhorado
+    fig.add_vline(
+        x=PESO_MINIMO, 
+        line_dash="dash", 
+        line_color="#4CAF50", 
+        line_width=2,
+        annotation_text=f"Mín: {PESO_MINIMO}g",
+        annotation_position="top",
+        annotation=dict(font_size=12, font_color='#4CAF50')
+    )
+    fig.add_vline(
+        x=PESO_MAXIMO, 
+        line_dash="dash", 
+        line_color="#4CAF50",
+        line_width=2,
+        annotation_text=f"Máx: {PESO_MAXIMO}g",
+        annotation_position="top",
+        annotation=dict(font_size=12, font_color='#4CAF50')
+    )
     
     fig.update_layout(
-        title_text="Distribuição de Peso das Peças",
-        xaxis_title="Peso (g)",
-        yaxis_title="Quantidade",
-        height=400
+        title_text="<b>Distribuição de Peso das Peças</b>",
+        title_font_size=20,
+        xaxis_title="<b>Peso (g)</b>",
+        yaxis_title="<b>Quantidade</b>",
+        height=400,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='#FAFAFA', size=12),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(255,255,255,0.1)',
+            showline=True,
+            linecolor='rgba(255,255,255,0.2)'
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(255,255,255,0.1)',
+            showline=True,
+            linecolor='rgba(255,255,255,0.2)'
+        ),
+        bargap=0.1
     )
     
     return fig
@@ -183,7 +406,8 @@ def criar_grafico_distribuicao_peso(sistema: SistemaArmazenamento) -> go.Figure:
 
 def pagina_cadastro() -> None:
     """Interface de cadastro de novas peças."""
-    st.header("📝 Cadastrar Nova Peça")
+    st.markdown("## 📝 Cadastro de Peças")
+    st.markdown("*Registre novas peças para controle de qualidade automático*")
     
     with st.form("form_cadastro", clear_on_submit=True):
         col1, col2 = st.columns(2)
@@ -220,7 +444,7 @@ def pagina_cadastro() -> None:
                 format="%.1f"
             )
         
-        submitted = st.form_submit_button("✅ Cadastrar Peça", use_container_width=True)
+        submitted = st.form_submit_button("✅ Cadastrar Peça", width='stretch')
         
         if submitted:
             if not id_peca:
@@ -278,7 +502,8 @@ def pagina_cadastro() -> None:
 
 def pagina_visualizacao() -> None:
     """Interface de visualização de dados e gráficos."""
-    st.header("📊 Visualização de Dados")
+    st.markdown("## 📊 Dashboard de Visualização")
+    st.markdown("*Acompanhe em tempo real as métricas de qualidade da produção*")
     
     sistema = st.session_state.sistema
     
@@ -287,35 +512,55 @@ def pagina_visualizacao() -> None:
     
     st.divider()
     
-    # Gráficos
+    # Gráficos em cards
     col1, col2 = st.columns(2)
     
     with col1:
+        st.markdown("""
+        <div class='custom-card'>
+            <h3 style='margin-top: 0;'>🎯 Taxa de Aprovação</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
         grafico_aprovacao = criar_grafico_aprovacao(sistema)
         if grafico_aprovacao:
-            st.plotly_chart(grafico_aprovacao, use_container_width=True)
+            st.plotly_chart(grafico_aprovacao, width='stretch', key='grafico_aprovacao')
         else:
             st.info("📊 Nenhuma peça cadastrada ainda")
     
     with col2:
+        st.markdown("""
+        <div class='custom-card'>
+            <h3 style='margin-top: 0;'>⚠️ Análise de Reprovações</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
         grafico_motivos = criar_grafico_motivos_reprovacao(sistema)
         if grafico_motivos:
-            st.plotly_chart(grafico_motivos, use_container_width=True)
+            st.plotly_chart(grafico_motivos, width='stretch', key='grafico_motivos')
         else:
             st.info("📊 Nenhuma peça reprovada ainda")
     
-    # Distribuição de peso
+    # Distribuição de peso em card separado
     st.divider()
+    
+    st.markdown("""
+    <div class='custom-card'>
+        <h3 style='margin-top: 0;'>⚖️ Distribuição de Peso</h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
     grafico_peso = criar_grafico_distribuicao_peso(sistema)
     if grafico_peso:
-        st.plotly_chart(grafico_peso, use_container_width=True)
+        st.plotly_chart(grafico_peso, width='stretch', key='grafico_peso')
     else:
         st.info("📊 Nenhuma peça cadastrada ainda")
 
 
 def pagina_pecas() -> None:
     """Interface de listagem de peças."""
-    st.header("📋 Listagem de Peças")
+    st.markdown("## 📋 Listagem de Peças")
+    st.markdown("*Visualize todas as peças processadas pelo sistema*")
     
     sistema = st.session_state.sistema
     
@@ -330,7 +575,7 @@ def pagina_pecas() -> None:
             
             st.dataframe(
                 df_aprovadas,
-                use_container_width=True,
+                width='stretch',
                 hide_index=True
             )
     
@@ -356,7 +601,8 @@ def pagina_pecas() -> None:
 
 def pagina_caixas() -> None:
     """Interface de visualização de caixas."""
-    st.header("📦 Gerenciamento de Caixas")
+    st.markdown("## 📦 Gerenciamento de Caixas")
+    st.markdown("*Acompanhe o empacotamento e status das caixas de produção*")
     
     sistema = st.session_state.sistema
     
@@ -390,7 +636,8 @@ def pagina_caixas() -> None:
 
 def pagina_relatorio() -> None:
     """Interface de relatório completo."""
-    st.header("📈 Relatório Completo")
+    st.markdown("## 📈 Relatório Completo")
+    st.markdown("*Análise detalhada de todas as métricas e indicadores de produção*")
     
     sistema = st.session_state.sistema
     
@@ -455,25 +702,33 @@ def pagina_relatorio() -> None:
 def main() -> None:
     """Função principal da aplicação Streamlit."""
     
+    # Aplica estilos customizados
+    aplicar_estilos_customizados()
+    
     # Inicializa o estado
     inicializar_session_state()
     
-    # Título principal
-    st.title("🏭 Sistema de Gestão de Peças Industriais")
-    st.markdown("### Automação Digital para Controle de Qualidade")
+    # Título principal com design moderno
+    st.markdown("""
+    <div class='gradient-header'>
+        <h1>🏭 Sistema de Gestão de Peças Industriais</h1>
+        <p>Automação Digital para Controle de Qualidade e Produtividade</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Sidebar com menu
     with st.sidebar:
         # Cabeçalho visual da sidebar
         st.markdown("""
         <div style='background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); 
-                    padding: 20px; 
-                    border-radius: 10px; 
+                    padding: 25px; 
+                    border-radius: 12px; 
                     text-align: center;
-                    margin-bottom: 20px;'>
-            <h2 style='color: white; margin: 0; font-size: 24px;'>🏭 QUALIDADE</h2>
-            <p style='color: white; margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;'>
-                Controle de Produção
+                    margin-bottom: 20px;
+                    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);'>
+            <h2 style='color: white; margin: 0; font-size: 28px; font-weight: 700;'>🏭 QUALIDADE</h2>
+            <p style='color: white; margin: 8px 0 0 0; font-size: 15px; opacity: 0.95;'>
+                Controle de Produção Industrial
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -495,15 +750,27 @@ def main() -> None:
         st.markdown("---")
         
         st.markdown("### ⚙️ Critérios de Qualidade")
-        st.markdown(f"""
-        - **Peso:** {PESO_MINIMO}g - {PESO_MAXIMO}g
-        - **Cores:** {', '.join(CORES_ACEITAS)}
-        - **Comprimento:** {COMPRIMENTO_MINIMO}cm - {COMPRIMENTO_MAXIMO}cm
-        """)
+        
+        # Card estilizado para critérios
+        st.markdown("""
+        <div style='background: rgba(76, 175, 80, 0.1); 
+                    padding: 15px; 
+                    border-radius: 8px; 
+                    border-left: 4px solid #4CAF50;
+                    margin: 10px 0;'>
+            <p style='margin: 5px 0;'><strong>⚖️ Peso:</strong><br>{} - {}g</p>
+            <p style='margin: 5px 0;'><strong>🎨 Cores:</strong><br>{}</p>
+            <p style='margin: 5px 0;'><strong>📏 Comprimento:</strong><br>{} - {}cm</p>
+        </div>
+        """.format(
+            PESO_MINIMO, PESO_MAXIMO,
+            ', '.join(CORES_ACEITAS),
+            COMPRIMENTO_MINIMO, COMPRIMENTO_MAXIMO
+        ), unsafe_allow_html=True)
         
         st.markdown("---")
         
-        if st.button("🔄 Resetar Sistema", type="secondary", use_container_width=True):
+        if st.button("🔄 Resetar Sistema", type="secondary", width='stretch'):
             st.session_state.sistema = inicializar_sistema()
             st.session_state.historico_cadastros = []
             st.success("Sistema resetado!")

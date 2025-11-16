@@ -1,0 +1,23 @@
+[theme]
+# TEMA LIGHT MODE - Para usar este tema, copie o conteúdo para config.toml
+# Cores principais - Design moderno e profissional (Light Mode)
+primaryColor = "#4CAF50"  # Verde vibrante para ações principais
+backgroundColor = "#FFFFFF"  # Fundo branco
+secondaryBackgroundColor = "#F0F2F6"  # Fundo secundário claro
+textColor = "#262730"  # Texto escuro
+font = "sans serif"
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+
+[browser]
+gatherUsageStats = false
+
+[runner]
+magicEnabled = true
+fastReruns = true
+

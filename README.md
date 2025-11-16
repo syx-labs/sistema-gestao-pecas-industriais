@@ -1,63 +1,32 @@
 # 🏭 Sistema de Automação Digital para Gestão de Peças Industriais
 
-Sistema desenvolvido em Python para automatizar o controle de produção e qualidade de peças fabricadas em linha de montagem industrial.
+> Desenvolvido por **Gabriel Falcão** como projeto acadêmico da disciplina de Algoritmos e Lógica de Programação
 
-## 📋 Descrição do Projeto
+## 📖 Sobre o Projeto
 
-Este sistema resolve o problema crítico da inspeção manual de peças, que gera atrasos, falhas de conferência e aumento de custos operacionais. Através de uma solução automatizada, o sistema:
+Este sistema nasceu de um desafio real da indústria: **como automatizar o controle de qualidade de peças fabricadas?**
 
-- ✅ Avalia automaticamente a qualidade de cada peça produzida
-- 📦 Organiza peças aprovadas em caixas de capacidade controlada
-- 📊 Gera relatórios consolidados em tempo real
-- 🎯 Rastreia motivos de reprovação para análise de qualidade
+Atualmente, muitas empresas ainda dependem de inspeção manual, o que gera:
+- ⏱️ Atrasos na produção
+- ❌ Erros humanos na conferência
+- 💰 Aumento de custos operacionais
+- 📊 Dificuldade em rastrear dados
 
-## 🎯 Critérios de Qualidade
+A solução? Um sistema Python que faz tudo isso automaticamente, em tempo real.
 
-Uma peça é **APROVADA** apenas se atender **TODOS** os critérios:
+## 🎯 O Problema que Resolvi
 
-| Critério | Valor Aceito |
-|----------|--------------|
-| **Peso** | Entre 95g e 105g |
-| **Cor** | Azul ou Verde |
-| **Comprimento** | Entre 10cm e 20cm |
+Imagine uma linha de montagem produzindo centenas de peças por dia. Cada peça precisa ser:
+1. Pesada (deve estar entre 95g e 105g)
+2. Verificada a cor (apenas azul ou verde são aceitas)
+3. Medida o comprimento (entre 10cm e 20cm)
 
-Qualquer desvio desses critérios resulta em **REPROVAÇÃO** automática.
+Se **TODOS** os critérios forem atendidos → ✅ Aprovada  
+Se **QUALQUER** critério falhar → ❌ Reprovada (com motivo registrado)
 
-## 🚀 Como Executar
+As peças aprovadas são organizadas em caixas de 10 unidades, que fecham automaticamente quando completas.
 
-### Pré-requisitos
-
-- Python 3.8 ou superior
-- Sistema operacional: Windows, macOS ou Linux
-
-### Instalação
-
-1. Clone ou baixe este repositório:
-```bash
-git clone <url-do-repositorio>
-cd rocketseat-project-python
-```
-
-2. Nenhuma dependência externa é necessária! O projeto usa apenas a biblioteca padrão do Python.
-
-### Executando o Programa
-
-**Opção 1 - Via Python:**
-```bash
-python3 main.py
-```
-
-**Opção 2 - Executável direto (Linux/macOS):**
-```bash
-./main.py
-```
-
-**Opção 3 - Windows:**
-```bash
-python main.py
-```
-
-## 📱 Funcionalidades
+## 🚀 Como Funciona
 
 ### Menu Principal
 
@@ -72,15 +41,9 @@ python main.py
 ======================================
 ```
 
-### 1️⃣ Cadastrar Nova Peça
+### Exemplo Prático
 
-Permite inserir os dados de uma peça (ID, peso, cor, comprimento) e:
-- Valida automaticamente contra os critérios de qualidade
-- Exibe imediatamente se foi aprovada ou reprovada
-- Se aprovada: adiciona na caixa atual
-- Se a caixa atingir 10 peças: fecha automaticamente e cria nova caixa
-
-**Exemplo de uso:**
+**Cadastrando uma peça aprovada:**
 ```
 ID da peça: P001
 Peso (g): 100
@@ -91,59 +54,21 @@ Comprimento (cm): 15
 Adicionada à Caixa #1 (1/10 peças)
 ```
 
-### 2️⃣ Listar Peças
-
-Oferece três opções:
-- **a)** Listar apenas peças aprovadas
-- **b)** Listar apenas peças reprovadas (com motivos)
-- **c)** Listar todas as peças
-
-**Exemplo de saída (peça reprovada):**
+**Cadastrando uma peça reprovada:**
 ```
-❌ PEÇAS REPROVADAS (1):
-  ID: P002
-    Peso: 120.0g
-    Cor: vermelho
-    Comprimento: 25.0cm
-    Motivos:
-      - Peso fora do intervalo (95.0-105.0g): 120.0g
-      - Cor inadequada (esperado: azul ou verde): vermelho
-      - Comprimento fora do intervalo (10.0-20.0cm): 25.0cm
+ID da peça: P002
+Peso (g): 120
+Cor: vermelho
+Comprimento (cm): 25
+
+❌ Peça P002 REPROVADA!
+Motivos:
+  - Peso fora do intervalo (95.0-105.0g): 120.0g
+  - Cor inadequada (esperado: azul ou verde): vermelho
+  - Comprimento fora do intervalo (10.0-20.0cm): 25.0cm
 ```
 
-### 3️⃣ Remover Peça
-
-Permite remover uma peça cadastrada (aprovada ou reprovada) pelo seu ID.
-Solicita confirmação antes de executar a remoção.
-
-### 4️⃣ Listar Caixas
-
-Exibe:
-- **Caixas fechadas**: que atingiram 10 peças
-- **Caixa em preenchimento**: atual, com quantidade de peças
-- IDs de todas as peças em cada caixa
-
-**Exemplo:**
-```
-📦 CAIXAS FECHADAS (1):
-  Caixa #1 - 10 peças
-  Status: 🔒 Fechada
-  IDs das peças: P001, P003, P005, P007, P009, P011, P013, P015, P017, P019
-
-📦 CAIXA EM PREENCHIMENTO:
-  Caixa #2 - 3/10 peças
-  IDs das peças: P021, P023, P025
-```
-
-### 5️⃣ Gerar Relatório Final
-
-Gera relatório completo com:
-- Total de peças processadas
-- Percentual de aprovação/reprovação
-- Quantidade de caixas fechadas
-- Detalhamento de reprovações por critério (peso, cor, comprimento)
-
-**Exemplo:**
+**Relatório consolidado:**
 ```
 ========================================
            RELATÓRIO FINAL
@@ -166,136 +91,136 @@ Gera relatório completo com:
 ========================================
 ```
 
-## 🏗️ Estrutura do Código
+## 💻 Como Executar
 
-O projeto segue os princípios de **Clean Code** e **Clean Architecture**:
+### Pré-requisitos
+- Python 3.8 ou superior
+- Nenhuma dependência externa necessária!
+
+### Instalação
+
+```bash
+# Clone o repositório
+git clone https://github.com/ogabrielfalcao/sistema-gestao-pecas-industriais.git
+cd sistema-gestao-pecas-industriais
+
+# Execute o programa
+python3 main.py
+```
+
+Simples assim! O projeto usa apenas a biblioteca padrão do Python.
+
+## 🏗️ Arquitetura do Código
+
+Estruturei o projeto seguindo os princípios de **Clean Code** e **Clean Architecture**:
 
 ```
-rocketseat-project-python/
-├── main.py                     # Ponto de entrada - loop principal
-├── models/                     # Camada de Domínio
-│   ├── __init__.py
-│   ├── peca.py                 # Modelo de Peça
-│   └── caixa.py                # Modelo de Caixa + Constantes
-├── services/                   # Camada de Lógica de Negócio
-│   ├── __init__.py
-│   ├── validacao.py            # Validação de qualidade
-│   ├── armazenamento.py        # Gerenciamento de caixas
-│   └── relatorio.py            # Geração de relatórios
-├── utils/                      # Camada de Apresentação
-│   ├── __init__.py
-│   └── menu.py                 # Interface do usuário
-├── .gitignore
-├── requirements.txt
-├── README.md
-└── PRD_IMPLEMENTACAO.md        # Documento de especificação
+sistema-gestao-pecas-industriais/
+├── main.py                      # Ponto de entrada
+├── models/                      # Modelos de dados
+│   ├── peca.py                  # Estrutura de Peça
+│   └── caixa.py                 # Estrutura de Caixa
+├── services/                    # Lógica de negócio
+│   ├── validacao.py             # Validação de qualidade
+│   ├── armazenamento.py         # Gestão de caixas
+│   └── relatorio.py             # Geração de relatórios
+└── utils/                       # Interface do usuário
+    └── menu.py                  # Menu interativo
 ```
+
+### Por que essa estrutura?
+
+- **Separation of Concerns**: Cada camada tem uma responsabilidade única
+- **Testabilidade**: Fácil adicionar testes unitários
+- **Manutenibilidade**: Código organizado e fácil de entender
+- **Escalabilidade**: Simples adicionar novas funcionalidades
 
 ## 🎨 Decisões Técnicas
 
-### Princípios Aplicados
-
-1. **Single Responsibility Principle (SRP)**
-   - Cada módulo tem uma responsabilidade única e bem definida
-   - `validacao.py`: apenas valida critérios
-   - `armazenamento.py`: apenas gerencia caixas
-   - `relatorio.py`: apenas gera relatórios
-
-2. **Clean Code**
-   - Nomes de variáveis e funções autodescritivos
-   - Funções pequenas e focadas
-   - Comentários apenas onde necessário (código auto-explicativo)
-   - Type hints para clareza de tipos
-
-3. **Separation of Concerns**
-   - Modelos: estrutura de dados
-   - Services: lógica de negócio
-   - Utils: interface com usuário
-   - Main: orquestração
-
-4. **DRY (Don't Repeat Yourself)**
-   - Constantes centralizadas (`CAPACIDADE_MAXIMA_CAIXA`, `PESO_MINIMO`, etc.)
-   - Funções reutilizáveis para validação
-   - Factory functions para criação de objetos
-
-### Estruturas de Dados
-
-**TypedDict** foi escolhido para:
+### TypedDict vs Classes
+Escolhi `TypedDict` para:
 - Type safety sem complexidade de classes
-- Simplicidade e clareza
-- Fácil serialização (futuro: JSON/BD)
+- Simplicidade e clareza no código
+- Fácil serialização (preparado para JSON/BD no futuro)
 
-### Validação de Entrada
-
-- Tratamento de erros em inputs numéricos
-- Validação de campos vazios
-- Verificação de IDs duplicados
-- Confirmação em operações destrutivas (remoção)
-
-## 🔄 Fluxo de Execução
-
-```
-Usuário → Menu → Opção Escolhida
-                      ↓
-                [Cadastrar Peça]
-                      ↓
-         Coleta: ID, Peso, Cor, Comprimento
-                      ↓
-            [Validar Qualidade]
-                      ↓
-              ┌───────┴───────┐
-              ↓               ↓
-          APROVADA        REPROVADA
-              ↓               ↓
-      [Adicionar na      [Registrar
-         Caixa]           Motivos]
-              ↓
-      [Verificar se
-       caixa lotou]
-              ↓
-      [Fechar e criar
-        nova se sim]
-              ↓
-      [Feedback ao
-         Usuário]
+### Constantes Centralizadas
+```python
+PESO_MINIMO = 95.0
+PESO_MAXIMO = 105.0
+CORES_ACEITAS = ['azul', 'verde']
+CAPACIDADE_MAXIMA_CAIXA = 10
 ```
 
-## 📈 Possíveis Expansões Futuras
+Isso torna fácil ajustar os critérios sem mexer na lógica.
 
-Este protótipo poderia ser expandido para um cenário industrial real:
+### Validação Individual
+Cada critério tem sua própria função:
+```python
+validar_peso(peso)
+validar_cor(cor)
+validar_comprimento(comprimento)
+```
 
-### 🔌 Integração com Hardware
-- **Sensores IoT**: Balanças digitais, leitores de cor RGB, medidores de comprimento
-- **Protocolo MQTT**: Comunicação em tempo real com dispositivos
-- **Raspberry Pi**: Controle embarcado da linha de produção
+Isso segue o **Single Responsibility Principle** do SOLID.
+
+## 📊 Estatísticas do Projeto
+
+- **830 linhas** de código Python
+- **10 arquivos** .py
+- **25+ funções** bem documentadas
+- **3 camadas** arquiteturais
+- **0 dependências** externas
+
+## 🔮 Visão Futura
+
+Este é um protótipo acadêmico, mas pensei em como poderia evoluir para a indústria real:
+
+### 🔌 Hardware & IoT
+- Integração com balanças digitais
+- Leitores de cor RGB automáticos
+- Medidores de comprimento via sensores
 
 ### 🤖 Inteligência Artificial
-- **Visão Computacional**: Detecção automática de defeitos visuais
-- **Machine Learning**: Previsão de falhas baseada em padrões históricos
-- **Ajuste Dinâmico**: Otimização automática de critérios de qualidade
+- Visão computacional para detectar defeitos visuais
+- Machine learning para prever falhas antes de acontecerem
+- Ajuste automático de critérios baseado em histórico
 
-### 🏢 Integração Industrial
-- **MES (Manufacturing Execution System)**: Sincronização com gestão fabril
-- **ERP**: Integração com SAP/Oracle para rastreabilidade completa
-- **Dashboard**: Visualização em tempo real de KPIs
-- **Banco de Dados**: PostgreSQL/MongoDB para persistência
-- **API REST**: Exposição de dados para outros sistemas
+### 🏢 Integração Empresarial
+- Conexão com sistemas ERP (SAP, Oracle)
+- Dashboard web em tempo real
+- Banco de dados para histórico completo
+- API REST para integração com outros sistemas
 
 ### ⚙️ Automação Completa
-- **Esteira Automatizada**: Separação física automática de peças
-- **Robótica**: Braço robótico para empacotamento
-- **Etiquetagem**: QR Code/RFID em cada caixa
+- Esteira automatizada
+- Braço robótico para empacotamento
+- Etiquetas RFID nas caixas
 
-## 👨‍💻 Autor
+## 🎓 O que Aprendi
 
-**Gabriel Falcão**  
-Projeto Acadêmico - Algoritmos e Lógica de Programação  
-Data: Novembro 2025
+Este projeto me ensinou muito sobre:
+
+- **Estruturas de Dados**: Como organizar informações de forma eficiente
+- **Lógica de Programação**: Validações condicionais, loops, fluxos de decisão
+- **Modularização**: Dividir um problema grande em funções pequenas
+- **Clean Code**: Escrever código que outros desenvolvedores conseguem entender
+- **Type Safety**: A importância de tipar o código corretamente
+- **Documentação**: Um bom README vale ouro
+
+Mas o mais importante: aprendi a **pensar como um programador** - decompor problemas complexos em soluções simples e elegantes.
+
+## 🙏 Agradecimentos
+
+- À disciplina de Algoritmos e Lógica de Programação
+- Aos professores que me guiaram nesta jornada
+- À documentação oficial do Python (sempre salvando!)
 
 ## 📄 Licença
 
-Este projeto foi desenvolvido para fins educacionais.
+Este projeto foi desenvolvido para fins educacionais como parte do curso de Algoritmos e Lógica de Programação.
 
 ---
 
-**💡 Dica:** Para uma experiência melhor, use um terminal com suporte a emojis e cores.
+**Desenvolvido com ☕ e 💻 por Gabriel Falcão**
+
+*"Código limpo não é escrito seguindo regras. Código limpo é escrito por programadores que se importam."* - Robert C. Martin

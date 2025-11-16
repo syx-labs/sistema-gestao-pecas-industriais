@@ -54,3 +54,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Roteiro do trabalho (não versionar)
+Roteiro do Trabalho*.pdf
+*.docx.pdf

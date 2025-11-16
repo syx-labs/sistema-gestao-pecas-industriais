@@ -1,0 +1,16 @@
+# Dependências de desenvolvimento e testes
+
+# Framework de testes
+pytest>=7.4.0
+
+# Cobertura de código
+pytest-cov>=4.1.0
+
+# Mocking e fixtures avançados
+pytest-mock>=3.11.0
+
+# Execução paralela de testes
+pytest-xdist>=3.3.0
+
+# Testes baseados em propriedades
+hypothesis>=6.82.0

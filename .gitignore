@@ -58,3 +58,19 @@ Thumbs.db
 # Roteiro do trabalho (não versionar)
 Roteiro do Trabalho*.pdf
 *.docx.pdf
+
+# Streamlit
+.streamlit/secrets.toml
+.streamlit/cache/
+
+# AI assistants
+.claude/
+.cursor/
+.cursorrules
+.copilot/
+.github/copilot-instructions.md
+
+# Pytest
+.pytest_cache/
+.pytest_cache
+*.pytest_cache

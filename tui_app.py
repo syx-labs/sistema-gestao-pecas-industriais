@@ -185,6 +185,10 @@ class CadastroScreen(Screen):
             mensagem_widget.update(f"[red]{ICON_ERROR} Peso deve ser um número válido[/red]")
             return
 
+        if peso <= 0:
+            mensagem_widget.update(f"[red]{ICON_ERROR} Peso deve ser maior que zero[/red]")
+            return
+
         if not cor:
             mensagem_widget.update(f"[red]{ICON_ERROR} Cor não pode ser vazia[/red]")
             return
@@ -193,6 +197,10 @@ class CadastroScreen(Screen):
             comprimento = float(comprimento_str)
         except ValueError:
             mensagem_widget.update(f"[red]{ICON_ERROR} Comprimento deve ser um número válido[/red]")
+            return
+
+        if comprimento <= 0:
+            mensagem_widget.update(f"[red]{ICON_ERROR} Comprimento deve ser maior que zero[/red]")
             return
 
         # Cria e valida peça
@@ -514,10 +522,10 @@ class RelatorioScreen(Screen):
 """
 
         if pecas_caixa_atual > 0:
-            percentual_caixa = (pecas_caixa_atual / 10) * 100
-            filled = int(percentual_caixa / 5)
+            percentual_caixa = (pecas_caixa_atual / CAPACIDADE_MAXIMA_CAIXA) * 100
+            filled = int((pecas_caixa_atual * 20) / CAPACIDADE_MAXIMA_CAIXA)
             barra = "█" * filled + "░" * (20 - filled)
-            content += f"[bold]Caixa em preenchimento:[/bold] 1 caixa ({pecas_caixa_atual}/10 peças)\n"
+            content += f"[bold]Caixa em preenchimento:[/bold] 1 caixa ({pecas_caixa_atual}/{CAPACIDADE_MAXIMA_CAIXA} peças)\n"
             content += f"  [{barra}] {percentual_caixa:.0f}%\n"
         else:
             content += f"[bold]Caixa em preenchimento:[/bold] vazia\n"

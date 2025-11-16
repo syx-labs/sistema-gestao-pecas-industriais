@@ -30,6 +30,7 @@ from services.validacao import (
     COMPRIMENTO_MAXIMO
 )
 from services.relatorio import gerar_estatisticas_reprovacao
+from services import database
 from models.peca import criar_peca
 
 
@@ -486,6 +487,8 @@ def pagina_cadastro() -> None:
                     st.balloons()
             else:
                 sistema['pecas_reprovadas'].append(peca)
+                # Sincroniza com o banco de dados
+                database.sincronizar_sistema(sistema)
                 st.error(f"❌ Peça {id_peca} REPROVADA!")
                 
                 with st.expander("📋 Ver motivos da reprovação"):
@@ -770,7 +773,13 @@ def main() -> None:
         
         st.markdown("---")
         
-        if st.button("🔄 Resetar Sistema", type="secondary", width='stretch'):
+        if st.button("🔄 Recarregar Dados do Banco", type="primary", width='stretch'):
+            # Recarrega dados do banco de dados
+            st.session_state.sistema = database.carregar_sistema_completo()
+            st.success("✅ Dados recarregados do banco de dados!")
+            st.rerun()
+        
+        if st.button("🗑️ Resetar Sistema", type="secondary", width='stretch'):
             st.session_state.sistema = inicializar_sistema()
             st.session_state.historico_cadastros = []
             st.success("Sistema resetado!")

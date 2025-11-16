@@ -120,15 +120,44 @@ cd sistema-gestao-pecas-industriais
 bun install  # ou: pip install -r requirements.txt
 ```
 
-### Modo Terminal (CLI)
+### Modo Terminal Interativo (TUI) ⌨️ **NOVO!**
 
-Execute a versão original em linha de comando:
+Execute a interface de terminal moderna com **navegação por setas** (estilo Charm/Bubble Tea):
 
 ```bash
 python3 main.py
 ```
 
-### Modo Visual (Streamlit) ✨ **NOVO!**
+**Interface TUI interativa habilitada por padrão!** 🎉
+
+#### Recursos da Interface TUI:
+
+- ⌨️ **Navegação por Setas**: Use ↑↓ para navegar, Enter para selecionar
+- 🎨 **Visual Moderno**: Interface rica com bordas, cores e ícones
+- ⚡ **Responsivo**: Feedback instantâneo sem digitação de números
+- 🔄 **Todas as Funcionalidades**: Cadastro, listagem, caixas, relatórios
+- 📱 **Atalhos de Teclado**:
+  - `A` = Mostrar aprovadas
+  - `R` = Mostrar reprovadas
+  - `T` = Mostrar todas
+  - `ESC` = Voltar
+  - `Q` = Sair
+
+#### Fallback para Modo Clássico
+
+Se preferir o menu numérico tradicional, use:
+
+```bash
+# Via argumento
+python3 main.py --classic
+
+# Via variável de ambiente
+PECAS_CLI_CLASSICO=1 python3 main.py
+```
+
+Se a biblioteca Textual não estiver instalada, o sistema automaticamente usa o modo clássico.
+
+### Modo Visual (Streamlit) ✨
 
 Execute a interface visual moderna com gráficos e dashboards:
 

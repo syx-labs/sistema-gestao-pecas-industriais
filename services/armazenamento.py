@@ -2,6 +2,8 @@
 Serviço de gerenciamento de armazenamento de peças em caixas.
 """
 
+import logging
+import sqlite3
 from typing import TypedDict, List, Tuple, Optional
 from models.peca import Peca
 from models.caixa import Caixa, CAPACIDADE_MAXIMA_CAIXA, criar_caixa
@@ -12,6 +14,9 @@ if 'services.database' not in sys.modules:
     from services import database
 else:
     database = sys.modules['services.database']
+
+# Configurar logger
+logger = logging.getLogger(__name__)
 
 
 class SistemaArmazenamento(TypedDict):
@@ -189,9 +194,18 @@ def inicializar_sistema() -> SistemaArmazenamento:
                 database.sincronizar_sistema(sistema)
             
             return sistema
-        except Exception:
-            # Se houver erro ao carregar, cria sistema novo
-            pass
+        except (sqlite3.Error, IOError, ValueError, KeyError) as e:
+            # Registra erro específico com traceback completo
+            logger.error(
+                "Failed to load system from database, falling back to new system initialization. "
+                "Error: %s", 
+                e, 
+                exc_info=True
+            )
+            logger.warning(
+                "Database load failed - initializing new empty system. "
+                "Previous data may be inaccessible."
+            )
     
     # Cria sistema novo
     sistema = SistemaArmazenamento(

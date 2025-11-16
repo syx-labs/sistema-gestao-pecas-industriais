@@ -8,8 +8,10 @@ Data: 2025-11-16
 import pytest
 import tempfile
 import shutil
+import sqlite3
 from pathlib import Path
 from typing import Generator
+from unittest.mock import patch
 
 from services import database
 from services.armazenamento import SistemaArmazenamento
@@ -449,4 +451,98 @@ class TestUtilidades:
         database.remover_banco()
         
         assert not temp_db.exists()
+
+
+class TestTransacaoRollback:
+    """Testes para cobertura do bloco de rollback em get_connection (linhas 41-43)."""
+    
+    def test_rollback_em_excecao(self, temp_db: Path) -> None:
+        """
+        Testa que o rollback é executado quando ocorre exceção durante transação.
+        
+        Cobre as linhas 41-43 de database.py:
+        - except Exception as e:
+        -     conn.rollback()
+        -     raise e
+        """
+        database.inicializar_database()
+        
+        # Força um erro de constraint violation
+        with pytest.raises(sqlite3.IntegrityError):
+            with database.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Insere uma peça
+                cursor.execute("""
+                    INSERT INTO pecas (id, peso, cor, comprimento, aprovada)
+                    VALUES ('P001', 100.0, 'azul', 15.0, 1)
+                """)
+                
+                # Tenta inserir peça com mesmo ID (viola PRIMARY KEY)
+                cursor.execute("""
+                    INSERT INTO pecas (id, peso, cor, comprimento, aprovada)
+                    VALUES ('P001', 101.0, 'verde', 16.0, 1)
+                """)
+        
+        # Verifica que o rollback foi executado
+        # A primeira peça NÃO deve estar no banco (foi revertida)
+        with database.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM pecas")
+            count = cursor.fetchone()[0]
+            assert count == 0  # Nenhuma peça foi salva devido ao rollback
+    
+    def test_rollback_preserva_dados_anteriores(self, temp_db: Path) -> None:
+        """
+        Testa que rollback não afeta transações já commitadas.
+        """
+        database.inicializar_database()
+        
+        # Salva uma peça com sucesso
+        peca1 = criar_peca("P001", 100.0, "azul", 15.0, True, [])
+        database.salvar_peca(peca1)
+        
+        # Tenta operação que falha
+        with pytest.raises(sqlite3.IntegrityError):
+            with database.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Insere peça que conflita com P001
+                cursor.execute("""
+                    INSERT INTO pecas (id, peso, cor, comprimento, aprovada)
+                    VALUES ('P001', 102.0, 'verde', 17.0, 1)
+                """)
+        
+        # Verifica que a primeira peça ainda existe
+        aprovadas, _ = database.carregar_pecas()
+        assert len(aprovadas) == 1
+        assert aprovadas[0]['id'] == "P001"
+        assert aprovadas[0]['peso'] == 100.0  # Dados originais preservados
+    
+    def test_rollback_com_foreign_key_violation(self, temp_db: Path) -> None:
+        """
+        Testa rollback quando há violação de foreign key.
+        """
+        database.inicializar_database()
+        
+        # Tenta inserir motivo de reprovação para peça inexistente
+        with pytest.raises(sqlite3.IntegrityError):
+            with database.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Habilita foreign keys
+                cursor.execute("PRAGMA foreign_keys = ON")
+                
+                # Tenta inserir motivo para peça que não existe
+                cursor.execute("""
+                    INSERT INTO motivos_reprovacao (peca_id, motivo)
+                    VALUES ('P999', 'Motivo qualquer')
+                """)
+        
+        # Verifica que nada foi inserido
+        with database.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM motivos_reprovacao")
+            count = cursor.fetchone()[0]
+            assert count == 0
 

@@ -289,7 +289,7 @@ class TestRecuperacaoErros:
         
         assert len(sistema2['pecas_aprovadas']) == 0
         assert sistema2['caixa_atual'] is not None
-        assert sistema2['contador_caixas'] >= 1
+        assert sistema2['contador_caixas'] == 1
     
     def test_sistema_se_recupera_de_estado_vazio(self, temp_db: Path) -> None:
         """Sistema vazio deve funcionar normalmente."""

@@ -9,6 +9,9 @@ Autor: Gabriel Falcão
 Data: 2025-11-15
 """
 
+import os
+import sys
+
 from services.armazenamento import inicializar_sistema
 from utils.menu import (
     exibir_menu_principal,
@@ -26,11 +29,61 @@ from utils.rich_styles import ICON_FABRICA, ICON_QUALIDADE
 
 console = Console()
 
+# Tenta importar Textual para interface interativa
+TEXTUAL_DISPONIVEL = False
+try:
+    from tui_app import run_tui_app
+    TEXTUAL_DISPONIVEL = True
+except ImportError:
+    TEXTUAL_DISPONIVEL = False
+
+
+def usar_modo_classico() -> bool:
+    """
+    Verifica se deve usar o modo clássico (menu numérico).
+
+    Returns:
+        True se deve usar modo clássico, False se deve usar TUI interativo
+    """
+    # Verifica variável de ambiente para forçar modo clássico
+    if os.getenv('PECAS_CLI_CLASSICO', '').lower() in ('1', 'true', 'yes'):
+        return True
+
+    # Verifica argumento de linha de comando
+    if '--classic' in sys.argv or '--classico' in sys.argv:
+        return True
+
+    # Se Textual não estiver disponível, usa clássico
+    if not TEXTUAL_DISPONIVEL:
+        return True
+
+    # Por padrão, usa TUI interativo se disponível
+    return False
+
 
 def main() -> None:
     """
     Função principal do sistema.
     Inicializa o sistema e executa o loop do menu interativo.
+    """
+    # Verifica qual modo usar
+    if usar_modo_classico():
+        # Modo clássico (menu numérico)
+        if not TEXTUAL_DISPONIVEL:
+            console.print("[yellow]⚠️  TUI interativo não disponível. Usando modo clássico.[/yellow]")
+            console.print("[cyan]💡 Para habilitar navegação por setas, instale: pip install textual[/cyan]\n")
+
+        main_classico()
+    else:
+        # Modo TUI interativo (navegação por setas)
+        console.print("[green]✨ Iniciando interface TUI interativa...[/green]")
+        console.print("[cyan]💡 Use --classic para voltar ao modo numérico[/cyan]\n")
+        run_tui_app()
+
+
+def main_classico() -> None:
+    """
+    Executa o sistema no modo clássico (menu numérico).
     """
     # Inicializa o sistema
     sistema = inicializar_sistema()

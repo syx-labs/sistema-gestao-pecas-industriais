@@ -524,7 +524,7 @@ def pagina_visualizacao() -> None:
         
         grafico_aprovacao = criar_grafico_aprovacao(sistema)
         if grafico_aprovacao:
-            st.plotly_chart(grafico_aprovacao, width='stretch', key='grafico_aprovacao')
+            st.plotly_chart(grafico_aprovacao, use_container_width=True, key='grafico_aprovacao')
         else:
             st.info("📊 Nenhuma peça cadastrada ainda")
     
@@ -537,7 +537,7 @@ def pagina_visualizacao() -> None:
         
         grafico_motivos = criar_grafico_motivos_reprovacao(sistema)
         if grafico_motivos:
-            st.plotly_chart(grafico_motivos, width='stretch', key='grafico_motivos')
+            st.plotly_chart(grafico_motivos, use_container_width=True, key='grafico_motivos')
         else:
             st.info("📊 Nenhuma peça reprovada ainda")
     
@@ -552,7 +552,7 @@ def pagina_visualizacao() -> None:
     
     grafico_peso = criar_grafico_distribuicao_peso(sistema)
     if grafico_peso:
-        st.plotly_chart(grafico_peso, width='stretch', key='grafico_peso')
+        st.plotly_chart(grafico_peso, use_container_width=True, key='grafico_peso')
     else:
         st.info("📊 Nenhuma peça cadastrada ainda")
 

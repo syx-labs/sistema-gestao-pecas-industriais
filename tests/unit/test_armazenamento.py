@@ -9,7 +9,11 @@ Testa:
 - Remoção de peças por ID
 """
 
+import sys
+import sqlite3
+import logging
 import pytest
+from unittest.mock import patch, MagicMock
 from models.peca import criar_peca
 from models.caixa import CAPACIDADE_MAXIMA_CAIXA
 from services.armazenamento import (
@@ -413,3 +417,119 @@ class TestConsistenciaEstado:
 
         ids = [p['id'] for p in sistema['pecas_reprovadas']]
         assert len(ids) == len(set(ids))
+
+
+# ========================================
+# TESTES DE COBERTURA DE CÓDIGO
+# ========================================
+
+class TestImportacaoCondicional:
+    """Testes para cobrir a importação condicional do módulo database (linha 16)."""
+
+    @pytest.mark.unit
+    def test_importacao_quando_database_ja_carregado(self):
+        """
+        Testa o ramo else da importação condicional (linha 16).
+        
+        Quando services.database já está em sys.modules, o código
+        deve usar sys.modules['services.database'] ao invés de importar.
+        """
+        # Garante que services.database está em sys.modules
+        import services.database as db_module
+        assert 'services.database' in sys.modules
+        
+        # Reimporta armazenamento para ativar a linha 16
+        import importlib
+        import services.armazenamento
+        importlib.reload(services.armazenamento)
+        
+        # Verifica que o sistema funciona normalmente
+        sistema = services.armazenamento.inicializar_sistema()
+        assert sistema is not None
+        assert 'pecas_aprovadas' in sistema
+        assert 'pecas_reprovadas' in sistema
+
+
+class TestRecuperacaoErros:
+    """Testes para cobrir tratamento de exceções em inicializar_sistema (linhas 197-222)."""
+
+    @pytest.mark.unit
+    def test_recuperacao_erro_sqlite(self, caplog):
+        """
+        Testa recuperação quando carregar_sistema_completo lança sqlite3.Error.
+        
+        O sistema deve:
+        1. Capturar a exceção
+        2. Logar erro e warning
+        3. Criar sistema novo vazio
+        """
+        with caplog.at_level(logging.ERROR):
+            with patch('services.database.banco_existe', return_value=True):
+                with patch('services.database.carregar_sistema_completo', side_effect=sqlite3.Error("Banco corrompido")):
+                    sistema = inicializar_sistema()
+                    
+                    # Verifica que sistema novo foi criado
+                    assert sistema is not None
+                    assert len(sistema['pecas_aprovadas']) == 0
+                    assert len(sistema['pecas_reprovadas']) == 0
+                    assert sistema['contador_caixas'] == 1
+                    
+                    # Verifica que erro foi logado
+                    assert any("Failed to load system from database" in record.message for record in caplog.records)
+
+    @pytest.mark.unit
+    def test_recuperacao_erro_io(self, caplog):
+        """
+        Testa recuperação quando carregar_sistema_completo lança IOError.
+        
+        Simula erro de I/O ao ler banco de dados.
+        """
+        with caplog.at_level(logging.WARNING):
+            with patch('services.database.banco_existe', return_value=True):
+                with patch('services.database.carregar_sistema_completo', side_effect=IOError("Erro de leitura")):
+                    sistema = inicializar_sistema()
+                    
+                    # Verifica que sistema novo foi criado
+                    assert sistema is not None
+                    assert len(sistema['pecas_aprovadas']) == 0
+                    
+                    # Verifica que warning foi logado
+                    assert any("Database load failed" in record.message for record in caplog.records)
+
+    @pytest.mark.unit
+    def test_recuperacao_erro_valor(self, caplog):
+        """
+        Testa recuperação quando carregar_sistema_completo lança ValueError.
+        
+        Simula dados inválidos no banco.
+        """
+        with caplog.at_level(logging.ERROR):
+            with patch('services.database.banco_existe', return_value=True):
+                with patch('services.database.carregar_sistema_completo', side_effect=ValueError("Dados inválidos")):
+                    sistema = inicializar_sistema()
+                    
+                    # Verifica que sistema novo foi criado
+                    assert sistema is not None
+                    assert sistema['caixa_atual'] is not None
+                    
+                    # Verifica logs de erro
+                    assert any(record.levelname == "ERROR" for record in caplog.records)
+
+    @pytest.mark.unit
+    def test_recuperacao_erro_key(self, caplog):
+        """
+        Testa recuperação quando carregar_sistema_completo lança KeyError.
+        
+        Simula dados com chaves faltando.
+        """
+        with caplog.at_level(logging.WARNING):
+            with patch('services.database.banco_existe', return_value=True):
+                with patch('services.database.carregar_sistema_completo', side_effect=KeyError("chave_inexistente")):
+                    sistema = inicializar_sistema()
+                    
+                    # Verifica que sistema novo foi criado
+                    assert sistema is not None
+                    assert sistema['contador_caixas'] == 1
+                    
+                    # Verifica que warning sobre dados inacessíveis foi logado
+                    assert any("Previous data may be inaccessible" in record.message for record in caplog.records)

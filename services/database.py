@@ -268,10 +268,6 @@ def carregar_caixas() -> Tuple[List[Caixa], Caixa, int]:
         caixa_atual: Optional[Caixa] = None
         contador_caixas = 0
         
-        # Primeiro, carrega todas as peças para preencher as caixas
-        cursor.execute("SELECT * FROM pecas WHERE aprovada = 1")
-        pecas_dict = {row['id']: row for row in cursor.fetchall()}
-        
         for row in rows:
             # Carrega peças da caixa
             cursor.execute("""
